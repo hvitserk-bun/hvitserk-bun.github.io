@@ -1,9 +1,37 @@
-import { Button, Grid, Snackbar, TextField, Tooltip } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  Snackbar,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import { useState } from "react";
 import "./App.css";
 import { decrypt, encrypt, generateKey } from "./crypt";
+import { l10n, Language } from "./l18n";
+
+const guessLanguage = (): Language => {
+  const userLanguage = navigator.language;
+  const guessedLanguage = Object.entries(Language).find(([key, value]) => {
+    return userLanguage.includes(value);
+  });
+
+  if (guessedLanguage) {
+    guessedLanguage[0] as unknown as Language;
+  }
+
+  return Language.En;
+};
 
 function App() {
+  const [language, setLanguage] = useState(guessLanguage());
+
+  const cLn = l10n[language];
+
   const [pass, setPass] = useState("");
 
   const [messageIn, setMessageIn] = useState("");
@@ -15,7 +43,7 @@ function App() {
       (e) => {
         console.error(e);
         setToastOpen(true);
-        setToastMessage("Cannot encrypt message, check your passphrase");
+        setToastMessage(cLn.text.encryptError);
       }
     );
   };
@@ -29,7 +57,7 @@ function App() {
       (e) => {
         console.error(e);
         setToastOpen(true);
-        setToastMessage("Cannot decrypt message, check your passphrase or encrypted message");
+        setToastMessage(cLn.text.decryptError);
       }
     );
   };
@@ -61,17 +89,41 @@ function App() {
   return (
     <div className="App">
       <Grid container spacing={2} p={2}>
+        <Grid item xs={0} sm={10}></Grid>
+        <Grid
+          item
+          xs={12}
+          sm={2}
+          sx={{ display: "flex", justifyContent: "flex-end" }}
+        >
+          <FormControl fullWidth>
+            <InputLabel id="language-select">{cLn.labels.language}</InputLabel>
+            <Select
+              labelId="language-select"
+              value={language}
+              onChange={(e) =>
+                setLanguage(e.target.value as unknown as Language)
+              }
+            >
+              {Object.values(Language).map((l) => (
+                <MenuItem key={l} value={l}>
+                  {l}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
         <Grid item xs={0} sm={3}></Grid>
         <Grid
           item
           xs={12}
           sm={6}
-          style={{ display: "flex", justifyContent: "center" }}
+          sx={{ display: "flex", justifyContent: "center" }}
         >
           <TextField
             value={pass}
             onChange={(e) => setPass(e.target.value)}
-            label="Passphrase"
+            label={l10n[language].labels.pass}
             fullWidth
           />
         </Grid>
@@ -86,7 +138,7 @@ function App() {
         >
           <Grid item xs={12} mb={2}>
             <TextField
-              label="Message (you want to encrypt)"
+              label={cLn.labels.encryptMessage}
               variant="outlined"
               onChange={(e) => setMessageIn(e.target.value)}
               value={messageIn}
@@ -96,7 +148,7 @@ function App() {
           </Grid>
           <Grid item xs={12} mb={2}>
             <Button variant="contained" onClick={encryptMessage} fullWidth>
-              Encrypt
+              {cLn.actions.encrypt}
             </Button>
           </Grid>
           <Grid
@@ -104,12 +156,13 @@ function App() {
             xs={12}
             onClick={() => copyToClipboard({ content: encryptedMessageOut })}
           >
-            <Tooltip title="Click to copy" enterDelay={100} placement="top">
+            <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
               <TextField
                 value={encryptedMessageOut}
                 InputProps={{ readOnly: true }}
                 multiline
-                label="Encrypted message"
+                label={cLn.labels.encryptedMessage}
+                sx={{ textarea: { cursor: "pointer" } }}
                 fullWidth
               />
             </Tooltip>
@@ -125,7 +178,7 @@ function App() {
         >
           <Grid item xs={12} mb={2}>
             <TextField
-              label="Message (you want to decrypt)"
+              label={cLn.labels.decryptMessage}
               variant="outlined"
               onChange={(e) => setEncryptedMessageIn(e.target.value)}
               value={encryptedMessageIn}
@@ -135,7 +188,7 @@ function App() {
           </Grid>
           <Grid item xs={12} mb={2}>
             <Button variant="contained" onClick={decryptMessage} fullWidth>
-              Decrypt
+              {cLn.actions.decrypt}
             </Button>
           </Grid>
           <Grid
@@ -143,12 +196,13 @@ function App() {
             xs={12}
             onClick={() => copyToClipboard({ content: messageOut })}
           >
-            <Tooltip title="Click to copy" enterDelay={100} placement="top">
+            <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
               <TextField
                 value={messageOut}
                 InputProps={{ readOnly: true }}
                 multiline
-                label="Decrypted message"
+                label={cLn.labels.decryptedMessage}
+                sx={{ textarea: { cursor: "pointer" } }}
                 fullWidth
               />
             </Tooltip>
@@ -158,7 +212,7 @@ function App() {
         <Grid item xs={12} mt={2}>
           <Grid item xs={12} mb={2}>
             <Button variant="contained" onClick={generatePass} fullWidth>
-              Generate Passphrase
+              {cLn.actions.generate}
             </Button>
           </Grid>
           <Grid
@@ -166,11 +220,11 @@ function App() {
             xs={12}
             onClick={() => copyToClipboard({ content: generatedPass })}
           >
-            <Tooltip title="Click to copy" enterDelay={100} placement="top">
+            <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
               <TextField
                 value={generatedPass}
-                label="Generated Passphrase"
                 InputProps={{ readOnly: true }}
+                label={cLn.labels.generate}
                 sx={{ input: { cursor: "pointer" } }}
                 fullWidth
               />
