@@ -3,7 +3,13 @@ export enum Language {
   Ua = "ua",
 }
 
-type ActionKeys = "encrypt" | "decrypt" | "generate" | "copy" | "share";
+type ActionKeys =
+  | "encrypt"
+  | "decrypt"
+  | "generate"
+  | "copy"
+  | "share"
+  | "savePass";
 
 type LabelKeys =
   | "encryptMessage"
@@ -14,7 +20,12 @@ type LabelKeys =
   | "decryptedMessage"
   | "language";
 
-type TextKeys = "encryptError" | "decryptError" | "copy";
+type TextKeys =
+  | "encryptError"
+  | "decryptError"
+  | "copy"
+  | "copied"
+  | "savedPass";
 
 type Translation = {
   actions: Record<ActionKeys, string>;
@@ -30,6 +41,7 @@ export const l10n: Record<Language, Translation> = {
       generate: "Generate new",
       copy: "Copy",
       share: "Share encrypted message link",
+      savePass: "Save pass",
     },
     labels: {
       language: "Language",
@@ -45,6 +57,9 @@ export const l10n: Record<Language, Translation> = {
       decryptError:
         "Cannot decrypt message, check your passphrase or encrypted message",
       copy: "Click to copy",
+      copied: "Copied!",
+      savedPass:
+        "Saved pass! It will be filled in Passphrase field after page refresh.",
     },
   },
   [Language.Ua]: {
@@ -54,6 +69,7 @@ export const l10n: Record<Language, Translation> = {
       generate: "Згенерувати новий",
       copy: "Копіювати",
       share: "Поділитись зашифрованим меседжем",
+      savePass: "Зберегти пароль",
     },
     labels: {
       language: "Мова",
@@ -69,6 +85,9 @@ export const l10n: Record<Language, Translation> = {
       decryptError:
         "Не вдалось розшифрувати, перевірте Пароль чи Зашифрований меседж",
       copy: "Натисність щоб скопіювати",
+      copied: "Скопійовано!",
+      savedPass:
+        "Пароль збережено! Він буде автоматично заповнений при новому вході на сайт.",
     },
   },
 };

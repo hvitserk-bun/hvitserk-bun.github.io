@@ -19,6 +19,8 @@ import { l10n, Language } from "./l18n";
 
 const ENCRYPTED_MESSAGE_IN_QUERY_KEY = "enM";
 
+const PASSPHRASE_STORAGE_KEY = "__p";
+
 const guessLanguage = (): Language => {
   const userLanguage = navigator.language;
   const guessedLanguage = Object.entries(Language).find(([key, value]) => {
@@ -45,7 +47,9 @@ function App() {
   const [language, setLanguage] = useState(guessLanguage());
   const cLn = l10n[language];
 
-  const [pass, setPass] = useState("");
+  const [pass, setPass] = useState(
+    localStorage.getItem(PASSPHRASE_STORAGE_KEY) ?? ""
+  );
 
   const [messageIn, setMessageIn] = useState("");
   const [encryptedMessageOut, setEncryptedMessageOut] = useState("");
@@ -93,10 +97,16 @@ function App() {
   }) => {
     if (!content) return;
 
-    const m = toastMessage ?? "Copied!";
+    const m = toastMessage ?? cLn.text.copied;
     window.navigator.clipboard.writeText(content);
     setToastOpen(true);
     setToastMessage(m);
+  };
+
+  const savePassphrase = () => {
+    localStorage.setItem(PASSPHRASE_STORAGE_KEY, pass);
+    setToastOpen(true);
+    setToastMessage(cLn.text.savedPass);
   };
 
   const generateLinkWithEncryptedMessageOut = () =>
@@ -163,7 +173,7 @@ function App() {
         </Grid>
 
         <Grid item xs={12} sm={6} container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={4}>
             <Button
               variant="outlined"
               onClick={() => copyToClipboard({ content: pass })}
@@ -174,7 +184,7 @@ function App() {
               {cLn.actions.copy}
             </Button>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={4}>
             <Button
               variant="outlined"
               onClick={generatePass}
@@ -182,6 +192,17 @@ function App() {
               fullWidth
             >
               {cLn.actions.generate}
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button
+              variant="outlined"
+              onClick={savePassphrase}
+              sx={{ height: "100%" }}
+              fullWidth
+              disabled={!pass}
+            >
+              {cLn.actions.savePass}
             </Button>
           </Grid>
         </Grid>
