@@ -1,5 +1,7 @@
+import { useTheme } from "@mui/material/styles";
 import {
   Button,
+  Divider,
   FormControl,
   Grid,
   InputLabel,
@@ -8,6 +10,7 @@ import {
   Snackbar,
   TextField,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
 import { useState } from "react";
 import "./App.css";
@@ -28,6 +31,9 @@ const guessLanguage = (): Language => {
 };
 
 function App() {
+  const theme = useTheme();
+  const isLessThanSmScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [language, setLanguage] = useState(guessLanguage());
 
   const cLn = l10n[language];
@@ -62,10 +68,8 @@ function App() {
     );
   };
 
-  const [generatedPass, setGeneratedPass] = useState("");
-
   const generatePass = () => {
-    generateKey().then((key) => setGeneratedPass(key));
+    generateKey().then((key) => setPass(key));
   };
 
   const [isToastOpen, setToastOpen] = useState(false);
@@ -113,7 +117,7 @@ function App() {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={0} sm={3}></Grid>
+
         <Grid
           item
           xs={12}
@@ -127,7 +131,33 @@ function App() {
             fullWidth
           />
         </Grid>
-        <Grid item xs={0} sm={3}></Grid>
+        <Grid item xs={12} sm={6} container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant="outlined"
+              onClick={() => copyToClipboard({ content: pass })}
+              sx={{ height: "100%" }}
+              fullWidth
+              disabled={!pass}
+            >
+              {cLn.actions.copy}
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant="outlined"
+              onClick={generatePass}
+              sx={{ height: "100%" }}
+              fullWidth
+            >
+              {cLn.actions.generate}
+            </Button>
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Divider>{isLessThanSmScreen ? cLn.actions.encrypt : ""}</Divider>
+        </Grid>
 
         <Grid
           item
@@ -155,19 +185,42 @@ function App() {
             item
             xs={12}
             onClick={() => copyToClipboard({ content: encryptedMessageOut })}
+            container
+            spacing={2}
           >
-            <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
-              <TextField
-                value={encryptedMessageOut}
-                InputProps={{ readOnly: true }}
-                multiline
-                label={cLn.labels.encryptedMessage}
-                sx={{ textarea: { cursor: "pointer" } }}
-                fullWidth
-              />
-            </Tooltip>
+            <Grid item xs={12}>
+              <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
+                <TextField
+                  value={encryptedMessageOut}
+                  InputProps={{ readOnly: true }}
+                  multiline
+                  label={cLn.labels.encryptedMessage}
+                  sx={{ textarea: { cursor: "pointer" } }}
+                  fullWidth
+                />
+              </Tooltip>
+            </Grid>
+            {isLessThanSmScreen ? (
+              <Grid item xs={12}>
+                <Button
+                  variant="outlined"
+                  onClick={() => copyToClipboard({ content: messageOut })}
+                  sx={{ height: "100%" }}
+                  fullWidth
+                  disabled={!pass}
+                >
+                  {cLn.actions.copy}
+                </Button>
+              </Grid>
+            ) : null}
           </Grid>
         </Grid>
+
+        {isLessThanSmScreen ? (
+          <Grid item xs={12}>
+            <Divider>{cLn.actions.decrypt}</Divider>
+          </Grid>
+        ) : null}
 
         <Grid
           item
@@ -195,40 +248,35 @@ function App() {
             item
             xs={12}
             onClick={() => copyToClipboard({ content: messageOut })}
+            container
+            spacing={2}
           >
-            <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
-              <TextField
-                value={messageOut}
-                InputProps={{ readOnly: true }}
-                multiline
-                label={cLn.labels.decryptedMessage}
-                sx={{ textarea: { cursor: "pointer" } }}
-                fullWidth
-              />
-            </Tooltip>
-          </Grid>
-        </Grid>
+            <Grid item xs={12}>
+              <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
+                <TextField
+                  value={messageOut}
+                  InputProps={{ readOnly: true }}
+                  multiline
+                  label={cLn.labels.decryptedMessage}
+                  sx={{ textarea: { cursor: "pointer" } }}
+                  fullWidth
+                />
+              </Tooltip>
+            </Grid>
 
-        <Grid item xs={12} mt={2}>
-          <Grid item xs={12} mb={2}>
-            <Button variant="contained" onClick={generatePass} fullWidth>
-              {cLn.actions.generate}
-            </Button>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            onClick={() => copyToClipboard({ content: generatedPass })}
-          >
-            <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
-              <TextField
-                value={generatedPass}
-                InputProps={{ readOnly: true }}
-                label={cLn.labels.generate}
-                sx={{ input: { cursor: "pointer" } }}
-                fullWidth
-              />
-            </Tooltip>
+            {isLessThanSmScreen ? (
+              <Grid item xs={12}>
+                <Button
+                  variant="outlined"
+                  onClick={() => copyToClipboard({ content: messageOut })}
+                  sx={{ height: "100%" }}
+                  fullWidth
+                  disabled={!pass}
+                >
+                  {cLn.actions.copy}
+                </Button>
+              </Grid>
+            ) : null}
           </Grid>
         </Grid>
 

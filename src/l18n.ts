@@ -3,7 +3,7 @@ export enum Language {
   Ua = "ua",
 }
 
-type ActionKeys = "encrypt" | "decrypt" | "generate";
+type ActionKeys = "encrypt" | "decrypt" | "generate" | "copy";
 
 type LabelKeys =
   | "encryptMessage"
@@ -28,6 +28,7 @@ export const l10n: Record<Language, Translation> = {
       encrypt: "Encrypt",
       decrypt: "Decrypt",
       generate: "Generate new",
+      copy: "Copy",
     },
     labels: {
       language: "Language",
@@ -50,6 +51,7 @@ export const l10n: Record<Language, Translation> = {
       encrypt: "Зашифрувати",
       decrypt: "Розшифрувати",
       generate: "Згенерувати новий",
+      copy: "Копіювати",
     },
     labels: {
       language: "Мова",
