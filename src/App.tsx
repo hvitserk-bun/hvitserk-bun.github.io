@@ -17,6 +17,8 @@ import "./App.css";
 import { decrypt, encrypt, generateKey } from "./crypt";
 import { l10n, Language } from "./l18n";
 
+const ENCRYPTED_MESSAGE_IN_QUERY_KEY = "enM";
+
 const guessLanguage = (): Language => {
   const userLanguage = navigator.language;
   const guessedLanguage = Object.entries(Language).find(([key, value]) => {
@@ -30,12 +32,17 @@ const guessLanguage = (): Language => {
   return Language.En;
 };
 
+const generateLink = (params: Record<string, string>): string => {
+  return [window.origin, "?", new URLSearchParams(params).toString()].join("");
+};
+
 function App() {
   const theme = useTheme();
   const isLessThanSmScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [language, setLanguage] = useState(guessLanguage());
+  const queryParams = new URLSearchParams(window.location.search);
 
+  const [language, setLanguage] = useState(guessLanguage());
   const cLn = l10n[language];
 
   const [pass, setPass] = useState("");
@@ -54,7 +61,9 @@ function App() {
     );
   };
 
-  const [encryptedMessageIn, setEncryptedMessageIn] = useState("");
+  const [encryptedMessageIn, setEncryptedMessageIn] = useState(
+    queryParams.get(ENCRYPTED_MESSAGE_IN_QUERY_KEY) ?? ""
+  );
   const [messageOut, setMessageOut] = useState("");
 
   const decryptMessage = () => {
@@ -82,13 +91,34 @@ function App() {
     content: string;
     toastMessage?: string;
   }) => {
+    if (!content) return;
+
     const m = toastMessage ?? "Copied!";
     window.navigator.clipboard.writeText(content);
     setToastOpen(true);
     setToastMessage(m);
   };
 
+  const generateLinkWithEncryptedMessageOut = () =>
+    generateLink({ [ENCRYPTED_MESSAGE_IN_QUERY_KEY]: encryptedMessageOut });
+
   const onToastClose = () => setToastOpen(false);
+
+  const shareButton = (
+    <Button
+      variant="outlined"
+      onClick={() =>
+        copyToClipboard({
+          content: generateLinkWithEncryptedMessageOut(),
+        })
+      }
+      sx={{ height: "100%" }}
+      fullWidth
+      disabled={!encryptedMessageOut}
+    >
+      {cLn.actions.share}
+    </Button>
+  );
 
   return (
     <div className="App">
@@ -131,6 +161,7 @@ function App() {
             fullWidth
           />
         </Grid>
+
         <Grid item xs={12} sm={6} container spacing={2}>
           <Grid item xs={6}>
             <Button
@@ -159,14 +190,8 @@ function App() {
           <Divider>{isLessThanSmScreen ? cLn.actions.encrypt : ""}</Divider>
         </Grid>
 
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          container
-          style={{ display: "flex", justifyContent: "center" }}
-        >
-          <Grid item xs={12} mb={2}>
+        <Grid item xs={12} sm={6} container spacing={2}>
+          <Grid item xs={12}>
             <TextField
               label={cLn.labels.encryptMessage}
               variant="outlined"
@@ -174,32 +199,40 @@ function App() {
               value={messageIn}
               multiline
               fullWidth
+              maxRows={6}
             />
           </Grid>
-          <Grid item xs={12} mb={2}>
+          <Grid item xs={12}>
             <Button variant="contained" onClick={encryptMessage} fullWidth>
               {cLn.actions.encrypt}
             </Button>
           </Grid>
-          <Grid
-            item
-            xs={12}
-            onClick={() => copyToClipboard({ content: encryptedMessageOut })}
-            container
-            spacing={2}
-          >
+          <Grid item xs={12} container spacing={2}>
             <Grid item xs={12}>
-              <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
+              <Tooltip
+                title={cLn.text.copy}
+                enterDelay={encryptedMessageOut ? 100 : 100000}
+                placement="top"
+                onClick={() =>
+                  copyToClipboard({ content: encryptedMessageOut })
+                }
+              >
                 <TextField
                   value={encryptedMessageOut}
                   InputProps={{ readOnly: true }}
                   multiline
+                  rows={6}
                   label={cLn.labels.encryptedMessage}
-                  sx={{ textarea: { cursor: "pointer" } }}
+                  sx={{
+                    textarea: {
+                      cursor: encryptedMessageOut ? "pointer" : "default",
+                    },
+                  }}
                   fullWidth
                 />
               </Tooltip>
             </Grid>
+
             {isLessThanSmScreen ? (
               <Grid item xs={12}>
                 <Button
@@ -217,19 +250,19 @@ function App() {
         </Grid>
 
         {isLessThanSmScreen ? (
+          <Grid item xs={12} sm={6}>
+            {shareButton}
+          </Grid>
+        ) : null}
+
+        {isLessThanSmScreen ? (
           <Grid item xs={12}>
             <Divider>{cLn.actions.decrypt}</Divider>
           </Grid>
         ) : null}
 
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          container
-          style={{ display: "flex", justifyContent: "center" }}
-        >
-          <Grid item xs={12} mb={2}>
+        <Grid item xs={12} sm={6} container spacing={2}>
+          <Grid item xs={12}>
             <TextField
               label={cLn.labels.decryptMessage}
               variant="outlined"
@@ -237,28 +270,31 @@ function App() {
               value={encryptedMessageIn}
               multiline
               fullWidth
+              maxRows={6}
             />
           </Grid>
-          <Grid item xs={12} mb={2}>
+          <Grid item xs={12}>
             <Button variant="contained" onClick={decryptMessage} fullWidth>
               {cLn.actions.decrypt}
             </Button>
           </Grid>
-          <Grid
-            item
-            xs={12}
-            onClick={() => copyToClipboard({ content: messageOut })}
-            container
-            spacing={2}
-          >
+          <Grid item xs={12} container spacing={2}>
             <Grid item xs={12}>
-              <Tooltip title={cLn.text.copy} enterDelay={100} placement="top">
+              <Tooltip
+                title={cLn.text.copy}
+                enterDelay={messageOut ? 100 : 100000}
+                placement="top"
+                onClick={() => copyToClipboard({ content: messageOut })}
+              >
                 <TextField
                   value={messageOut}
                   InputProps={{ readOnly: true }}
                   multiline
+                  rows={6}
                   label={cLn.labels.decryptedMessage}
-                  sx={{ textarea: { cursor: "pointer" } }}
+                  sx={{
+                    textarea: { cursor: messageOut ? "pointer" : "default" },
+                  }}
                   fullWidth
                 />
               </Tooltip>
@@ -279,6 +315,12 @@ function App() {
             ) : null}
           </Grid>
         </Grid>
+
+        {!isLessThanSmScreen ? (
+          <Grid item xs={12} sm={6}>
+            {shareButton}
+          </Grid>
+        ) : null}
 
         <Snackbar
           anchorOrigin={{ vertical: "top", horizontal: "center" }}
